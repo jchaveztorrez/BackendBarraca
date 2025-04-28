@@ -125,7 +125,7 @@ pip install --save-dev black
       <h1 style="font-size: 100px; margin: 0; color: #e53e3e; font-family: 'Arial', sans-serif; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">Base de Datos PostgreSQL</h1>
     </td>
     <td style="border: none; padding: 0;">
-      <img src="https://png.pngtree.com/png-vector/20231116/ourmid/pngtree-pdf-icon-doc-png-image_10541408.png" alt="PostgreSQL Logo" width="100" style="transition: transform 0.3s ease-in-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg" alt="PostgreSQL Logo" width="100" style="transition: transform 0.3s ease-in-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
     </td>
   </tr>
 </table>
