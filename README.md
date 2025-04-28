@@ -70,10 +70,10 @@ django-admin startapp users
 ### 1️⃣3️⃣ Creación de archivos en la aplicación `users`
 ```bash
 # Crear el archivo serializers.py
-touch users/serializers.py
+New-Item users/serializers.py -ItemType File
 
 # Crear el archivo urls.py
-touch users/urls.py
+New-Item users/urls.py -ItemType File
 ```
 ---
 ### 🚀 Comandos útiles
