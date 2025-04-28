@@ -22,3 +22,90 @@
 mkdir BackendBarraca
 cd BackendBarraca
 ```
+
+###2️⃣ Instalación de virtualenv
+```bash
+pip install virtualenv
+```
+###3️⃣ Actualización de pip
+```bash
+python.exe -m pip install --upgrade pip
+```
+###4️⃣ Creación de un entorno virtual
+```bash
+virtualenv venv
+```
+###5️⃣ Activación del entorno virtual
+```bash
+./venv/Scripts/activate
+```
+###6️⃣ Instalación de Django
+```bash
+pip install django
+```
+###7️⃣ Instalación de Django REST Framework
+```bash
+pip install djangorestframework
+```
+###8️⃣ Instalación de Django REST Framework Simple JWT
+```bash
+pip install djangorestframework-simplejwt
+```
+###9️⃣ Instalación de Django CORS Headers
+```bash
+pip install django-cors-headers
+```
+###🔟 Instalación de psycopg2 (adaptador de PostgreSQL)
+```bash
+pip install psycopg2
+```
+###1️⃣1️⃣ Creación de un nuevo proyecto Django
+```bash
+django-admin startproject main .
+```
+###1️⃣2️⃣ Creación de una nueva aplicación Django
+```bash
+django-admin startapp users
+```
+---
+###🚀 Comandos útiles
+---
+###▶️ Levantar el servidor de desarrollo
+```bash
+python manage.py runserver
+```
+###🧩 Crear un nuevo modelo y migrarlos a la BD
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+###🔧 Crear un superusuario
+```bash
+python manage.py createsuperuser
+```
+###📦 Construcción de producción
+```bash
+python manage.py collectstatic
+```
+---
+###📦 Configuración de Prettier en .vscode
+---
+
+```bash
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // Recomendado para Django
+  "editor.formatOnSaveMode": "file",
+  "files.autoSave": "off",
+  "[python]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
+```
+###Instala las dependencias necesarias
+```bash
+pip install --save-dev black
+```
+###
+```bash
+```
