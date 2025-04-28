@@ -1,38 +1,24 @@
-# BackendBarraca
+<h1 align="center">🏗️ Backend Barraca 🦙</h1>
 
-<table>
+<table align="center" style="width: 100%; text-align: center; border-collapse: collapse; border: 1px solid blue; border-radius: 15px; background-color: #f4f4f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 20px;">
   <tr>
-    <td><h1>Framework Django</h1></td>
-    <td><img src="https://www.opengis.ch/wp-content/uploads/2020/04/django-python-logo.png" alt="Django Logo" width="100"/></td>
+    <td style="border: none; padding: 0; padding-right: 20px;">
+      <h1 style="font-size: 100px; margin: 0; color: #e53e3e; font-family: 'Arial', sans-serif; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">Django</h1>
+    </td>
+    <td style="border: none; padding: 0;">
+      <img src="https://www.opengis.ch/wp-content/uploads/2020/04/django-python-logo.png" alt="Django Logo" width="100" style="transition: transform 0.3s ease-in-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    </td>
   </tr>
 </table>
 
+---
 
-## Instalaciones
+## 🛠 Instalaciones realizadas
 
+---
+
+### 1️⃣ Crear la carpeta del proyecto
 ```bash
 mkdir BackendBarraca
 cd BackendBarraca
-1. Instalación de virtualenv
-pip install virtualenv
-2. Actualización de pip
-python.exe -m pip install --upgrade pip
-3. Creación de un entorno virtual
-virtualenv venv
-4. Activación del entorno virtual
-./venv/Scripts/activate
-5. Instalación de Django
-pip install django
-6. Instalación de Django REST Framework
-pip install djangorestframework
-7. Instalación de Django REST Framework Simple JWT
-pip install djangorestframework-simplejwt
-8. Instalación de Django CORS Headers
-pip install django-cors-headers
-9. Instalación de psycopg2 (adaptador de PostgreSQL)
-pip install psycopg2
-10. Creación de un nuevo proyecto Django
-django-admin startproject main .
-11. Creación de una nueva aplicación Django
-django-admin startapp users
 ```
