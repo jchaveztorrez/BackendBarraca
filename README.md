@@ -67,6 +67,14 @@ django-admin startproject main .
 ```bash
 django-admin startapp users
 ```
+### 1️⃣3️⃣ Creación de archivos en la aplicación `users`
+```bash
+# Crear el archivo serializers.py
+touch users/serializers.py
+
+# Crear el archivo urls.py
+touch users/urls.py
+```
 ---
 ### 🚀 Comandos útiles
 ---
