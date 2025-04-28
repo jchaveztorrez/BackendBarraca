@@ -118,3 +118,43 @@ pip install --save-dev black
 ###
 ```bash
 ```
+## 🗄️ Base de Datos PostgreSQL
+<table align="center" style="width: 100%; text-align: center; border-collapse: collapse; border: 1px solid blue; border-radius: 15px; background-color: #f4f4f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 20px;">
+  <tr>
+    <td style="border: none; padding: 0; padding-right: 20px;">
+      <h1 style="font-size: 100px; margin: 0; color: #e53e3e; font-family: 'Arial', sans-serif; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">Base de Datos PostgreSQL</h1>
+    </td>
+    <td style="border: none; padding: 0;">
+      <img src="https://png.pngtree.com/png-vector/20231116/ourmid/pngtree-pdf-icon-doc-png-image_10541408.png" alt="PostgreSQL Logo" width="100" style="transition: transform 0.3s ease-in-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    </td>
+  </tr>
+</table>
+### Base de Datos Local
+Para la implementación local en Django, puedes configurar tu base de datos PostgreSQL de la siguiente manera:
+
+```bash
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'freemarket',
+        'USER': 'postgres',
+        'PASSWORD': 'Contraseña',
+        'HOST': 'localhost',
+        'PORT': '5433',
+    }
+}
+```
+### Base de Datos en el servidor
+implementacion Servidor en Django
+```bash
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'freemarket'),  # Valor por defecto si no existe la variable
+        'USER': os.getenv('DB_USER', 'freemarket_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'E56Q9mldBA52Gh47RYBRlrZubgEoREJB'),
+        'HOST': os.getenv('DB_HOST', 'dpg-cvmkk7umcj7s738tjtog-a.oregon-postgres.render.com'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
+}
+```
