@@ -69,6 +69,7 @@ django-admin startapp users
 ```
 ### 1️⃣3️⃣ Creación de archivos en la aplicación `users`
 ```bash
+# Ejemplo (venv) PS E:\BarracaSantaCruz\BackendBarraca> New-Item users/urls.py -ItemType File
 # Crear el archivo serializers.py
 New-Item users/serializers.py -ItemType File
 
