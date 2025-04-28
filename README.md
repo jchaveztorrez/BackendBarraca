@@ -59,11 +59,11 @@ pip install django-cors-headers
 ```bash
 pip install psycopg2
 ```
-### 1️⃣1️⃣ Creación de un nuevo proyecto Django
+### 1️⃣1️⃣ Creación de un nuevo proyecto Django `BackendBarraca`
 ```bash
 django-admin startproject main .
 ```
-### 1️⃣2️⃣ Creación de una nueva aplicación Django
+### 1️⃣2️⃣ Creación de una nueva aplicación Django `BackendBarraca`
 ```bash
 django-admin startapp users
 ```
