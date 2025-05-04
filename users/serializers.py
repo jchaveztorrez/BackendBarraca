@@ -18,12 +18,16 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = '__all__'
+
 class UsuarioRolSucursalSerializer(serializers.ModelSerializer):
     usuario = UsuarioSerializer(read_only=True)
     rol = RolSerializer(read_only=True)
+    sucursal = SucursalSerializer(read_only=True)
+
     class Meta:
         model = UsuarioRolSucursal
         fields = '__all__'
+        
 class RolPermisoSerializer(serializers.ModelSerializer):
     rol = RolSerializer(read_only=True)
     permiso = PermisoSerializer(read_only=True)

@@ -58,7 +58,7 @@ class UsuarioRolSucursal(models.Model):
         unique_together = ('usuario', 'rol', 'sucursal')
 
     def __str__(self):
-        return f'{self.usuario} | {self.rol} | {self.sucursal}'
+        return f'{self.usuario} - {self.rol} - {self.sucursal}'
 
 # Relación Rol ↔ Permiso
 class RolPermiso(models.Model):

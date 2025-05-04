@@ -9,8 +9,8 @@ ruter.register(r'sucursal', SucursalViewSet)
 ruter.register(r'rol', RolViewSet)
 ruter.register(r'permiso', PermisoViewSet)
 ruter.register(r'usuario', UsuarioViewSet)
-ruter.register(r'usuario_rol_sucursal', UsuarioRolSucursalViewSet)
-ruter.register(r'rol_permiso', RolPermisoViewSet)
+ruter.register(r'usuariorolsucursal', UsuarioRolSucursalViewSet)
+ruter.register(r'rolpermiso', RolPermisoViewSet)
 urlpatterns = [
     path('', include(ruter.urls)),
 ]

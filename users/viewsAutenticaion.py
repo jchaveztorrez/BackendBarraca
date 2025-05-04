@@ -34,19 +34,9 @@ class SucursalViewSet(viewsets.ModelViewSet):
         instance.delete()  # Elimina la sucursal de la base de datos
         return Response({'status': 'sucursal deleted'}, status=status.HTTP_204_NO_CONTENT)
     
-
-    """ def get_queryset(self):
-        return self.queryset.filter(estado=True)
-
-    @action(detail=False, methods=['get'])
-    def inactive(self, request):
-        inactive_sucursales = self.queryset.filter(estado=False)
-        serializer = self.get_serializer(inactive_sucursales, many=True)
-        return Response(serializer.data) """
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
-    """ permission_classes = [permissions.IsAuthenticated] """
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -58,16 +48,9 @@ class RolViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.estado = False
-        instance.save()
-        return Response({'status': 'rol deactivated'}, status=status.HTTP_204_NO_CONTENT)
-
 class PermisoViewSet(viewsets.ModelViewSet):
     queryset = Permiso.objects.all()
     serializer_class = PermisoSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -87,7 +70,6 @@ class PermisoViewSet(viewsets.ModelViewSet):
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -98,52 +80,89 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.estado = False
-        instance.save()
-        return Response({'status': 'usuario deactivated'}, status=status.HTTP_204_NO_CONTENT)
 class UsuarioRolSucursalViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRolSucursal.objects.all()
     serializer_class = UsuarioRolSucursalSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        usuario_id = request.data.get('usuario')
+        rol_id = request.data.get('rol')
+        sucursal_id = request.data.get('sucursal')
+
+        if UsuarioRolSucursal.objects.filter(usuario_id=usuario_id, rol_id=rol_id, sucursal_id=sucursal_id).exists():
+            return Response({'error': ['El usuario ya tiene ese rol asignado en esa sucursal']},status=status.HTTP_400_BAD_REQUEST)
+
+        instancia = UsuarioRolSucursal.objects.create(usuario_id=usuario_id, rol_id=rol_id, sucursal_id=sucursal_id)
+
+        return Response(UsuarioRolSucursalSerializer(instancia).data,status=status.HTTP_201_CREATED )
+
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
 
+        usuario_id = request.data.get('usuario')
+        rol_id = request.data.get('rol')
+        sucursal_id = request.data.get('sucursal')
+
+        # Validar si existe otra relación con los mismos datos
+        existe = UsuarioRolSucursal.objects.filter(usuario_id=usuario_id, rol_id=rol_id, sucursal_id=sucursal_id).exclude(id=instance.id).exists()
+
+        if existe:
+            return Response({'error': ['Ya existe esa asignación para otro registro']}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Actualizar los campos
+        instance.usuario_id = usuario_id
+        instance.rol_id = rol_id
+        instance.sucursal_id = sucursal_id
+        instance.save()
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.estado = False
-        instance.save()
-        return Response({'status': 'usuario rol sucursal deactivated'}, status=status.HTTP_204_NO_CONTENT)
+        instance.delete()  # Elimina el objeto de la base de datos
+        return Response({'status': 'usuario rol sucursal eliminado'}, status=status.HTTP_204_NO_CONTENT)
+   
 class RolPermisoViewSet(viewsets.ModelViewSet):
     queryset = RolPermiso.objects.all()
     serializer_class = RolPermisoSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        rol_id = request.data.get('rol')
+        permiso_id = request.data.get('permiso')
+
+        if RolPermiso.objects.filter(rol_id=rol_id, permiso_id=permiso_id).exists():
+            return Response({'error': ['Ya existe esta relación rol-permiso']}, status=status.HTTP_400_BAD_REQUEST)
+
+        instancia = RolPermiso.objects.create(rol_id=rol_id, permiso_id=permiso_id)
+
+        return Response(RolPermisoSerializer(instancia).data, status=status.HTTP_201_CREATED)
+
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.estado = False
+        rol_id = request.data.get('rol')
+        permiso_id = request.data.get('permiso')
+        # Validar si existe otra relación con los mismos datos
+        existe = RolPermiso.objects.filter(rol_id=rol_id, permiso_id=permiso_id).exclude(id=instance.id).exists()
+        
+        if existe:
+            return Response({'error': ['Ya existe esa asignación para otro registro']}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Actualizar los campos
+        instance.rol_id = rol_id
+        instance.permiso_id = permiso_id
         instance.save()
-        return Response({'status': 'rol permiso deactivated'}, status=status.HTTP_204_NO_CONTENT)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+
+
+
+
+
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
