@@ -46,6 +46,7 @@ pip install django
 ### 7️⃣ Instalación de Django REST Framework
 ```bash
 pip install djangorestframework
+pip install drf-spectacular
 ```
 ### 8️⃣ Instalación de Django REST Framework Simple JWT
 ```bash
@@ -66,6 +67,7 @@ django-admin startproject main .
 ### 1️⃣2️⃣ Creación de una nueva aplicación Django `BackendBarraca`
 ```bash
 django-admin startapp users
+
 ```
 ### 1️⃣3️⃣ Creación de archivos en la aplicación `users`
 ```bash
