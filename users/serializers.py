@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso
-from .models import UsuarioForestal, Transporte, Romaneo, Inventario, DetalleRomaneo, Venta, DetalleVenta
+from .models import ProductoMadera,Venta, DetalleVentaMadera, FacturaRecibo
 
 class SucursalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,40 +37,31 @@ class RolPermisoSerializer(serializers.ModelSerializer):
 
         
 """ Modelo de Autorizaciones para el usuario forestal """
-class UsarioForestalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UsuarioForestal
-        fields = '__all__'
-class TransporteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Transporte
-        fields = '__all__'
-class RomaneoSerializer(serializers.ModelSerializer):
-    usuario_forestal = UsarioForestalSerializer(read_only=True)
-    transporte = TransporteSerializer(read_only=True)
 
+class ProductoMaderaSerializer(serializers.ModelSerializer):
+    sucursal = SucursalSerializer(read_only=True)
+    
     class Meta:
-        model = Romaneo
+        model = ProductoMadera
         fields = '__all__'
-class InventarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Inventario
-        fields = '__all__'
-class DetalleRomaneoSerializer(serializers.ModelSerializer):
-    romaneo = RomaneoSerializer(read_only=True)
-    inventario = InventarioSerializer(read_only=True)
 
-    class Meta:
-        model = DetalleRomaneo
-        fields = '__all__'
 class VentaSerializer(serializers.ModelSerializer):
+    usuario = UsuarioSerializer(read_only=True)
+    sucursal = SucursalSerializer(read_only=True)
     class Meta:
         model = Venta
         fields = '__all__'
-class DetalleVentaSerializer(serializers.ModelSerializer):
+
+class DetalleVentaMaderaSerializer(serializers.ModelSerializer):
+    producto = ProductoMaderaSerializer(read_only=True)
     venta = VentaSerializer(read_only=True)
-    inventario = InventarioSerializer(read_only=True)
 
     class Meta:
-        model = DetalleVenta
+        model = DetalleVentaMadera
+        fields = '__all__'
+class FacturaReciboSerializer(serializers.ModelSerializer):
+    venta = VentaSerializer(read_only=True)
+
+    class Meta:
+        model = FacturaRecibo
         fields = '__all__'
