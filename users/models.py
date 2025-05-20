@@ -70,6 +70,14 @@ class RolPermiso(models.Model):
 
     def __str__(self):
         return f'{self.rol} - {self.permiso}'
+# categoría de productos
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+    estado = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre
 
 # Modelo de Producto de Madera
 class ProductoMadera(models.Model):
@@ -85,6 +93,7 @@ class ProductoMadera(models.Model):
     precio_barraca = models.DecimalField(max_digits=10, decimal_places=2)
     precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     estado = models.BooleanField(default=True)

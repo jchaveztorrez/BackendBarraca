@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import DetalleVentaMadera, ProductoMadera, Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso, Venta
-from .serializers import DetalleVentaMaderaSerializer, ProductoMaderaSerializer, SucursalSerializer, RolSerializer, PermisoSerializer, UsuarioSerializer, UsuarioRolSucursalSerializer, RolPermisoSerializer, VentaSerializer
+from .models import Categoria, DetalleVentaMadera, ProductoMadera, Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso, Venta
+from .serializers import CategoriaSerializer, DetalleVentaMaderaSerializer, ProductoMaderaSerializer, SucursalSerializer, RolSerializer, PermisoSerializer, UsuarioSerializer, UsuarioRolSucursalSerializer, RolPermisoSerializer, VentaSerializer
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -159,49 +159,77 @@ class RolPermisoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 
+class CategoriasViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = True
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
 
 class ProductoMaderaViewSet(viewsets.ModelViewSet):
     queryset = ProductoMadera.objects.all()
     serializer_class = ProductoMaderaSerializer
 
     def create(self, request, *args, **kwargs):
-        # Extraer datos del request
         data = {key: request.data.get(key) for key in [
-            'especie', 'ancho', 'espesor', 'largo', 'cantidad', 
+            'especie', 'ancho', 'espesor', 'largo', 'cantidad',
             'precio_compra', 'precio_barraca', 'precio_venta'
         ]}
 
-        # Obtener la sucursal como instancia de Sucursal
+        categoria_id = request.data.get('categoria')
+        try:
+            data['categoria'] = Categoria.objects.get(id=categoria_id)
+        except Categoria.DoesNotExist:
+            return Response({"error": "La categoría especificada no existe."}, status=status.HTTP_400_BAD_REQUEST)
+
         sucursal_id = request.data.get('sucursal')
         try:
             data['sucursal'] = Sucursal.objects.get(id=sucursal_id)
         except Sucursal.DoesNotExist:
             return Response({"error": "La sucursal especificada no existe."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Verificar si el producto ya existe con esas características (especie, dimensiones y sucursal)
         if ProductoMadera.objects.filter(
             especie=data['especie'],
             ancho=data['ancho'],
             espesor=data['espesor'],
             largo=data['largo'],
-            sucursal=data['sucursal']
+            sucursal=data['sucursal'],
+            categoria=data['categoria']  # <-- incluida en validación
         ).exists():
             return Response(
-                {'detail': 'Ya existe un producto con esa especie, dimensiones y sucursal.'},
+                {'detail': 'Ya existe un producto con esa especie, dimensiones, sucursal y categoría.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Crear el producto de madera
         producto_madera = ProductoMadera.objects.create(**data)
-
-        # Serializar el producto recién creado
         return Response(ProductoMaderaSerializer(producto_madera).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = request.data.copy()
 
-        # Actualizar sucursal si se proporciona
+        categoria_id = data.get('categoria')
+        if categoria_id:
+            try:
+                instance.categoria = Categoria.objects.get(id=categoria_id)
+            except Categoria.DoesNotExist:
+                return Response(
+                    {"error": "La categoría especificada no existe."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
         sucursal_id = data.get('sucursal')
         if sucursal_id:
             try:
@@ -212,7 +240,6 @@ class ProductoMaderaViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        # Actualizar campos básicos
         for field in [
             'especie', 'ancho', 'espesor', 'largo',
             'cantidad', 'precio_compra', 'precio_barraca', 'precio_venta'
@@ -220,33 +247,75 @@ class ProductoMaderaViewSet(viewsets.ModelViewSet):
             if field in data:
                 setattr(instance, field, data[field])
 
-        # Validar duplicidad de producto con misma especie, dimensiones y sucursal
         if ProductoMadera.objects.exclude(pk=instance.pk).filter(
             especie=instance.especie,
             ancho=instance.ancho,
             espesor=instance.espesor,
             largo=instance.largo,
-            sucursal=instance.sucursal
+            sucursal=instance.sucursal,
+            categoria=instance.categoria  # <-- incluida en validación
         ).exists():
             return Response(
-                {'detail': 'Ya existe otro producto con esa especie, dimensiones y sucursal.'},
+                {'detail': 'Ya existe otro producto con esa especie, dimensiones, sucursal y categoría.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Validar y guardar cambios
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-
         return Response(serializer.data)
 
-class VentasViewSet():
+class VentasViewSet(viewsets.ModelViewSet):
     queryset = Venta.objects.all()
     serializer_class = VentaSerializer
 
-class DetallesVentasViewSet():
+    def create(self, request, *args, **kwargs):
+        vendedor_id = request.data.get('vendedor_id')
+        sucursal_id = request.data.get('sucursal_id')
+        total = request.data.get('total', 0)
+
+        if not vendedor_id or not sucursal_id:
+            return Response({"error": "Se requiere el vendedor y la sucursal"}, status=status.HTTP_400_BAD_REQUEST)
+
+        venta = Venta.objects.create(
+            vendedor_id=vendedor_id,
+            sucursal_id=sucursal_id,
+            total=total
+        )
+
+        serializer = self.get_serializer(venta)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class DetallesVentasViewSet(viewsets.ModelViewSet):
     queryset = DetalleVentaMadera.objects.all()
     serializer_class = DetalleVentaMaderaSerializer
+
+    def create(self, request, *args, **kwargs):
+        try:
+            venta_id = request.data.get('venta')
+            producto_id = request.data.get('producto')
+            cantidad_vendida = int(request.data.get('cantidad_vendida'))
+            precio_unitario = float(request.data.get('precio_unitario'))
+
+            producto = ProductoMadera.objects.get(pk=producto_id)
+
+            if producto.cantidad < cantidad_vendida:
+                return Response({"error": f"Stock insuficiente. Disponible: {producto.cantidad}"}, status=status.HTTP_400_BAD_REQUEST)
+
+            detalle = DetalleVentaMadera.objects.create(
+                venta_id=venta_id,
+                producto=producto,
+                cantidad_vendida=cantidad_vendida,
+                precio_unitario=precio_unitario
+            )
+
+            serializer = self.get_serializer(detalle)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class LoginView(APIView):

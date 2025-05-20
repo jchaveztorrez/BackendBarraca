@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso
+from .models import Categoria, Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso
 from .models import ProductoMadera,Venta, DetalleVentaMadera, FacturaRecibo
 
 class SucursalSerializer(serializers.ModelSerializer):
@@ -38,15 +38,21 @@ class RolPermisoSerializer(serializers.ModelSerializer):
         
 """ Modelo de Autorizaciones para el usuario forestal """
 
+class CategoriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categoria
+        fields = '__all__'
+
 class ProductoMaderaSerializer(serializers.ModelSerializer):
     sucursal = SucursalSerializer(read_only=True)
+    categoria = CategoriaSerializer(read_only=True)
     
     class Meta:
         model = ProductoMadera
         fields = '__all__'
 
 class VentaSerializer(serializers.ModelSerializer):
-    usuario = UsuarioSerializer(read_only=True)
+    vendedor = UsuarioSerializer(read_only=True)
     sucursal = SucursalSerializer(read_only=True)
     class Meta:
         model = Venta
