@@ -292,29 +292,32 @@ class DetallesVentasViewSet(viewsets.ModelViewSet):
     serializer_class = DetalleVentaMaderaSerializer
 
     def create(self, request, *args, **kwargs):
-        try:
-            venta_id = request.data.get('venta')
-            producto_id = request.data.get('producto')
-            cantidad_vendida = int(request.data.get('cantidad_vendida'))
-            precio_unitario = float(request.data.get('precio_unitario'))
+           try:
+               venta_id = request.data.get('venta')
+               producto_id = request.data.get('producto')
+               cantidad_vendida = int(request.data.get('cantidad_vendida'))
+               precio_unitario = float(request.data.get('precio_unitario'))
 
-            producto = ProductoMadera.objects.get(pk=producto_id)
+               producto = ProductoMadera.objects.get(pk=producto_id)
 
-            if producto.cantidad < cantidad_vendida:
-                return Response({"error": f"Stock insuficiente. Disponible: {producto.cantidad}"}, status=status.HTTP_400_BAD_REQUEST)
+               if producto.cantidad < cantidad_vendida:
+                   return Response({"error": f"Stock insuficiente. Disponible: {producto.cantidad}"}, status=status.HTTP_400_BAD_REQUEST)
 
-            detalle = DetalleVentaMadera.objects.create(
-                venta_id=venta_id,
-                producto=producto,
-                cantidad_vendida=cantidad_vendida,
-                precio_unitario=precio_unitario
-            )
+               detalle = DetalleVentaMadera.objects.create(
+                   venta_id=venta_id,
+                   producto=producto,
+                   cantidad_vendida=cantidad_vendida,
+                   precio_unitario=precio_unitario
+               )
 
-            serializer = self.get_serializer(detalle)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+               serializer = self.get_serializer(detalle)
+               return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+           except Exception as e:
+               return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+   
 
 
 

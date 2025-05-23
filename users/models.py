@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
@@ -41,9 +42,11 @@ class Usuario(models.Model):
     imagen_url = models.URLField(max_length=500, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if not self.password.startswith('pbkdf2'):
+    # Solo volver a encriptar si la contraseña ha cambiado
+        if 'pbkdf2' not in self.password:
             self.password = make_password(self.password)
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f'{self.nombre} {self.apellido}'
@@ -134,18 +137,24 @@ class DetalleVentaMadera(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     def save(self, *args, **kwargs):
-        # Validar stock
         if self.producto.cantidad < self.cantidad_vendida:
             raise ValueError(f"Stock insuficiente: solo hay {self.producto.cantidad} unidades disponibles.")
 
-        # Calcular subtotal
-        self.subtotal = self.cantidad_vendida * self.precio_unitario
+        categoria = self.producto.categoria.nombre.lower()
 
-        # Descontar cantidad y actualizar volumen
+        if categoria == 'tabla':
+            volumen_por_unidad = (self.producto.ancho * self.producto.espesor * self.producto.largo) / Decimal(12)
+            self.subtotal = volumen_por_unidad * Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
+        elif categoria in ['listón', 'liston', 'ripa', 'muebles']:
+            self.subtotal = Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
+        else:
+            raise ValueError(f'Categoría no válida: {categoria}')
+
         self.producto.cantidad -= self.cantidad_vendida
-        self.producto.save()  # Esto actualiza el volumen automáticamente
-
+        self.producto.save()
         super().save(*args, **kwargs)
+   
+
 
 class FacturaRecibo(models.Model):
     TIPO_CHOICES = (
