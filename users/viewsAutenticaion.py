@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Categoria, DetalleVentaMadera, ProductoMadera, Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso, Venta
-from .serializers import CategoriaSerializer, DetalleVentaMaderaSerializer, ProductoMaderaSerializer, SucursalSerializer, RolSerializer, PermisoSerializer, UsuarioSerializer, UsuarioRolSucursalSerializer, RolPermisoSerializer, VentaSerializer
+from .models import Categoria, DetalleVentaMadera, FacturaRecibo, ProductoMadera, Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso, Venta
+from .serializers import CategoriaSerializer, DetalleVentaMaderaSerializer, FacturaReciboSerializer, ProductoMaderaSerializer, SucursalSerializer, RolSerializer, PermisoSerializer, UsuarioSerializer, UsuarioRolSucursalSerializer, RolPermisoSerializer, VentaSerializer
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -317,9 +317,25 @@ class DetallesVentasViewSet(viewsets.ModelViewSet):
 
            except Exception as e:
                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-   
 
 
+class FacturaReciboViewSet(viewsets.ModelViewSet):
+    queryset = FacturaRecibo.objects.all()
+    serializer_class = FacturaReciboSerializer
+
+    def create(self, request, *args, **kwargs):
+        venta_id = request.data.get('venta')
+        if not venta_id:
+            return Response({"error": "Se requiere el ID de la venta"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            venta = Venta.objects.get(pk=venta_id)
+        except Venta.DoesNotExist:
+            return Response({"error": "La venta especificada no existe."}, status=status.HTTP_404_NOT_FOUND)
+
+        factura_recibo = FacturaRecibo.objects.create(venta=venta)
+        serializer = self.get_serializer(factura_recibo)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]

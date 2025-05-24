@@ -1,7 +1,7 @@
 
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .viewsAutenticaion import  CategoriasViewSet, DetallesVentasViewSet, ProductoMaderaViewSet, SucursalViewSet, RolViewSet, PermisoViewSet, UsuarioViewSet, UsuarioRolSucursalViewSet, RolPermisoViewSet, VentasViewSet
+from .viewsAutenticaion import  CategoriasViewSet, DetallesVentasViewSet, FacturaReciboViewSet, ProductoMaderaViewSet, SucursalViewSet, RolViewSet, PermisoViewSet, UsuarioViewSet, UsuarioRolSucursalViewSet, RolPermisoViewSet, VentasViewSet
 
 
 from . import viewsAutenticaion
@@ -18,6 +18,7 @@ ruter.register(r'categorias', CategoriasViewSet)
 ruter.register(r'productoMadera', ProductoMaderaViewSet)
 ruter.register(r'venta', VentasViewSet)
 ruter.register(r'detalleventamadera', DetallesVentasViewSet)
+ruter.register(r'facturarecibo', FacturaReciboViewSet)
 #         fields = '__all__'
 
 urlpatterns = [
