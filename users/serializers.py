@@ -20,10 +20,10 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UsuarioRolSucursalSerializer(serializers.ModelSerializer):
-    usuario = UsuarioSerializer(read_only=True)
+    
     rol = RolSerializer(read_only=True)
     sucursal = SucursalSerializer(read_only=True)
-
+    usuario = UsuarioSerializer(read_only=True)
     class Meta:
         model = UsuarioRolSucursal
         fields = '__all__'
@@ -71,3 +71,7 @@ class FacturaReciboSerializer(serializers.ModelSerializer):
     class Meta:
         model = FacturaRecibo
         fields = '__all__'
+
+class LoginSerializer(serializers.Serializer):
+    correo = serializers.EmailField(max_length=100, required=False, allow_null=True)
+    password = serializers.CharField(max_length=255, required=True)  

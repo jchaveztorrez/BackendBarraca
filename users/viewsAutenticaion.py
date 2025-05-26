@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import Categoria, DetalleVentaMadera, FacturaRecibo, ProductoMadera, Sucursal, Rol, Permiso, Usuario, UsuarioRolSucursal, RolPermiso, Venta
-from .serializers import CategoriaSerializer, DetalleVentaMaderaSerializer, FacturaReciboSerializer, ProductoMaderaSerializer, SucursalSerializer, RolSerializer, PermisoSerializer, UsuarioSerializer, UsuarioRolSucursalSerializer, RolPermisoSerializer, VentaSerializer
+from .serializers import CategoriaSerializer, DetalleVentaMaderaSerializer, FacturaReciboSerializer, LoginSerializer, ProductoMaderaSerializer, SucursalSerializer, RolSerializer, PermisoSerializer, UsuarioSerializer, UsuarioRolSucursalSerializer, RolPermisoSerializer, VentaSerializer
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework import generics 
+from django.db.models import Prefetch
 
 # Create your views here.
 class SucursalViewSet(viewsets.ModelViewSet):
@@ -85,16 +86,30 @@ class UsuarioRolSucursalViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioRolSucursalSerializer
 
     def create(self, request, *args, **kwargs):
-        usuario_id = request.data.get('usuario')
-        rol_id = request.data.get('rol')
-        sucursal_id = request.data.get('sucursal')
+        usuario_data = request.data.get('usuario')
+        rol_data = request.data.get('rol')
+        sucursal_data = request.data.get('sucursal')
+
+        if not usuario_data or not rol_data or not sucursal_data:
+            return Response({'error': 'Datos incompletos'}, status=status.HTTP_400_BAD_REQUEST)
+
+        usuario_id = usuario_data.get('id')
+        rol_id = rol_data.get('id')
+        sucursal_id = sucursal_data.get('id')
+
+        if not usuario_id or not rol_id or not sucursal_id:
+            return Response({'error': 'IDs inválidos'}, status=status.HTTP_400_BAD_REQUEST)
 
         if UsuarioRolSucursal.objects.filter(usuario_id=usuario_id, rol_id=rol_id, sucursal_id=sucursal_id).exists():
             return Response({'error': ['El usuario ya tiene ese rol asignado en esa sucursal']},status=status.HTTP_400_BAD_REQUEST)
 
-        instancia = UsuarioRolSucursal.objects.create(usuario_id=usuario_id, rol_id=rol_id, sucursal_id=sucursal_id)
+        instancia = UsuarioRolSucursal.objects.create(
+            usuario_id=usuario_id,
+            rol_id=rol_id,
+            sucursal_id=sucursal_id
+        )
 
-        return Response(UsuarioRolSucursalSerializer(instancia).data,status=status.HTTP_201_CREATED )
+        return Response(UsuarioRolSucursalSerializer(instancia).data, status=status.HTTP_201_CREATED)
 
     
     def update(self, request, *args, **kwargs):
@@ -324,7 +339,9 @@ class FacturaReciboViewSet(viewsets.ModelViewSet):
     serializer_class = FacturaReciboSerializer
 
     def create(self, request, *args, **kwargs):
-        venta_id = request.data.get('venta')
+        venta_data = request.data.get('venta')
+        venta_id = venta_data.get('id') if isinstance(venta_data, dict) else venta_data
+
         if not venta_id:
             return Response({"error": "Se requiere el ID de la venta"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -333,49 +350,101 @@ class FacturaReciboViewSet(viewsets.ModelViewSet):
         except Venta.DoesNotExist:
             return Response({"error": "La venta especificada no existe."}, status=status.HTTP_404_NOT_FOUND)
 
-        factura_recibo = FacturaRecibo.objects.create(venta=venta)
-        serializer = self.get_serializer(factura_recibo)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        tipo = request.data.get('tipo')
+        nombre_cliente = request.data.get('nombre_cliente')
+        ci_nit = request.data.get('ci_nit')
+        total = request.data.get('total')
+
+        if not all([tipo, nombre_cliente, ci_nit, total]):
+            return Response({"error": "Faltan campos obligatorios."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            factura_recibo = FacturaRecibo.objects.create(
+                venta=venta,
+                tipo=tipo,
+                nombre_cliente=nombre_cliente,
+                ci_nit=ci_nit,
+                total=total
+            )
+            serializer = self.get_serializer(factura_recibo)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": f"Ocurrió un error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 class LoginView(APIView):
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = []  # No autenticación requerida para login
+    permission_classes = []
 
     def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+
+        # Validar datos del login
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        correo = serializer.validated_data.get('correo')
+        password = serializer.validated_data.get('password')
+
         try:
-            usuario = Usuario.objects.get(correo=request.data['correo'])
-            if check_password(request.data['password'], usuario.password):
-                refresh = RefreshToken.for_user(usuario)
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                    'usuario': UsuarioSerializer(usuario).data
-                })
-            else:
-                return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-        except ObjectDoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            # Obtener usuario con roles y permisos
+            usuario = Usuario.objects.prefetch_related(
+                Prefetch('usuariorolsucursal_set', queryset=UsuarioRolSucursal.objects.select_related('rol')),
+            ).get(correo=correo)
 
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+            # Verificar si el usuario está activo
+            if not usuario.estado:
+                return Response({'error': 'No puedes iniciar sesión!!!. Comuníquese con el administrador.'},
+                                status=status.HTTP_403_FORBIDDEN)
 
-    def post(self, request):
-        try:
-            request.user.auth_token.delete()
-            return Response({'status': 'Logged out'}, status=status.HTTP_200_OK)
-        except ObjectDoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+            # Verificar contraseña
+            if not check_password(password, usuario.password):
+                return Response({'error': 'Credenciales incorrectas'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request):
-        try:
-            usuario = request.user
-            if check_password(request.data['old_password'], usuario.password):
-                usuario.password = make_password(request.data['new_password'])
-                usuario.save()
-                return Response({'status': 'Password changed'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-        except ObjectDoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            # Obtener la primera sucursal asignada
+            sucursal = None
+            if usuario.usuariorolsucursal_set.exists():
+                sucursal_obj = usuario.usuariorolsucursal_set.first().sucursal
+                sucursal = {
+                    'id': sucursal_obj.id,
+                    'nombre': sucursal_obj.nombre,
+                    'direccion': sucursal_obj.direccion,
+                    'estado': sucursal_obj.estado
+                }
 
+
+            # Generar token JWT
+            refresh = RefreshToken.for_user(usuario)
+            access_token = str(refresh.access_token)
+
+            # Obtener roles y permisos
+            roles = []
+            permisos = []
+
+            for usuario_rol in usuario.usuariorolsucursal_set.all():
+                rol = usuario_rol.rol
+                roles.append(rol.nombre)
+
+                # Obtener permisos para cada rol
+                permisos += [rp.permiso.nombre for rp in rol.rolpermiso_set.all()]
+
+            # Verificar si el usuario tiene roles y permisos
+            if not roles or not permisos:
+                return Response({'error': 'El usuario no tiene roles ni permisos asignados.'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            # Enviar respuesta con token y datos del usuario
+            return Response({
+                'access_token': access_token,
+                'roles': roles,
+                'permisos': permisos,
+                'nombre': usuario.nombre,
+                'apellido': usuario.apellido,
+                'imagen_url': usuario.imagen_url,
+                'usuario_id': usuario.id,
+                'sucursal': sucursal  # <- AÑADIDO
+            }, status=status.HTTP_200_OK)
+
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)

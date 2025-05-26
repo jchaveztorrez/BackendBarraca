@@ -1,7 +1,7 @@
 
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .viewsAutenticaion import  CategoriasViewSet, DetallesVentasViewSet, FacturaReciboViewSet, ProductoMaderaViewSet, SucursalViewSet, RolViewSet, PermisoViewSet, UsuarioViewSet, UsuarioRolSucursalViewSet, RolPermisoViewSet, VentasViewSet
+from .viewsAutenticaion import  CategoriasViewSet, DetallesVentasViewSet, FacturaReciboViewSet, LoginView, ProductoMaderaViewSet, SucursalViewSet, RolViewSet, PermisoViewSet, UsuarioViewSet, UsuarioRolSucursalViewSet, RolPermisoViewSet, VentasViewSet
 
 
 from . import viewsAutenticaion
@@ -23,4 +23,5 @@ ruter.register(r'facturarecibo', FacturaReciboViewSet)
 
 urlpatterns = [
     path('', include(ruter.urls)),
+    path('login/', LoginView.as_view(), name='login'),
 ]

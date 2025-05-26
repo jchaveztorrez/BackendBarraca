@@ -145,7 +145,7 @@ class DetalleVentaMadera(models.Model):
         if categoria == 'tabla':
             volumen_por_unidad = (self.producto.ancho * self.producto.espesor * self.producto.largo) / Decimal(12)
             self.subtotal = volumen_por_unidad * Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
-        elif categoria in ['listón', 'liston', 'ripa', 'muebles']:
+        elif categoria in ['listón', 'liston', 'ripa', 'mueble']:
             self.subtotal = Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
         else:
             raise ValueError(f'Categoría no válida: {categoria}')
@@ -157,13 +157,8 @@ class DetalleVentaMadera(models.Model):
 
 
 class FacturaRecibo(models.Model):
-    TIPO_CHOICES = (
-        ('factura', 'Factura'),
-        ('recibo', 'Recibo'),
-    )
-
     venta = models.OneToOneField(Venta, on_delete=models.CASCADE, related_name='comprobante')
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    tipo = models.CharField(max_length=10, choices=[('factura', 'Factura'), ('recibo', 'Recibo')])
     
     nombre_cliente = models.CharField(max_length=100)
     ci_nit = models.CharField(max_length=30)
