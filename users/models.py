@@ -85,12 +85,12 @@ class Categoria(models.Model):
 # Modelo de Producto de Madera
 class ProductoMadera(models.Model):
     especie = models.CharField(max_length=100)
-    ancho = models.DecimalField(max_digits=5, decimal_places=2)
-    espesor = models.DecimalField(max_digits=5, decimal_places=2)
-    largo = models.DecimalField(max_digits=5, decimal_places=2)
+    ancho = models.DecimalField(max_digits=5, decimal_places=2) # pulgadas
+    espesor = models.DecimalField(max_digits=5, decimal_places=2) # pulgadas
+    largo = models.DecimalField(max_digits=5, decimal_places=2) # pies
     cantidad = models.PositiveIntegerField()
 
-    volumen = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    volumen = models.DecimalField(max_digits=10, decimal_places=2, editable=False) # pies cúbicos
 
     precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
     precio_barraca = models.DecimalField(max_digits=10, decimal_places=2)
@@ -141,12 +141,17 @@ class DetalleVentaMadera(models.Model):
             raise ValueError(f"Stock insuficiente: solo hay {self.producto.cantidad} unidades disponibles.")
 
         categoria = self.producto.categoria.nombre.lower()
-
+         # Cálculo por volumen (pies cúbicos), asumiendo medidas en pulgadas
         if categoria == 'tabla':
             volumen_por_unidad = (self.producto.ancho * self.producto.espesor * self.producto.largo) / Decimal(12)
             self.subtotal = volumen_por_unidad * Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
-        elif categoria in ['listón', 'liston', 'ripa', 'mueble']:
+        elif categoria in ['listón', 'liston', 'ripa',]:
+            self.subtotal = Decimal(self.precio_unitario) * Decimal(self.producto.largo) * Decimal(self.cantidad_vendida)
+        elif categoria == 'mueble':
             self.subtotal = Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
+        elif categoria == 'metro lineal':
+            largo_en_metros = Decimal(self.producto.largo) * Decimal('0.3048')  # pies a metros
+            self.subtotal = Decimal(self.precio_unitario) * largo_en_metros * Decimal(self.cantidad_vendida)    
         else:
             raise ValueError(f'Categoría no válida: {categoria}')
 
