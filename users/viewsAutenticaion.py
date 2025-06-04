@@ -14,6 +14,7 @@ from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework import generics 
 from django.db.models import Prefetch
+from cloudinary.models import CloudinaryField
 
 # Create your views here.
 class SucursalViewSet(viewsets.ModelViewSet):
@@ -68,19 +69,57 @@ class PermisoViewSet(viewsets.ModelViewSet):
         instance.estado = False
         instance.save()
         return Response({'status': 'permiso deactivated'}, status=status.HTTP_204_NO_CONTENT)
+import cloudinary.uploader
+from rest_framework.response import Response
+from rest_framework import viewsets, status
+from .models import Usuario
+from .serializers import UsuarioSerializer
+
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-    
+        data = request.data.copy()
+
+        # Subir la imagen a Cloudinary si se incluye
+        if 'imagen_url' in request.FILES:
+            try:
+                uploaded_image = cloudinary.uploader.upload(request.FILES['imagen_url'])
+                data['imagen_url'] = uploaded_image.get('url')
+                print("Imagen subida correctamente:", data['imagen_url'])
+            except Exception as e:
+                print("Error al subir imagen a Cloudinary:", e)
+                return Response({'error': 'Error al subir imagen a Cloudinary'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=data)
+        if not serializer.is_valid():
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        data = request.data.copy()
+
+        # Verifica que la imagen se esté recibiendo
+        print("Archivos recibidos:", request.FILES)
+
+        # Subir nueva imagen si existe
+        if 'imagen_url' in request.FILES:
+            try:
+                uploaded_image = cloudinary.uploader.upload(request.FILES['imagen_url'])
+                data['imagen_url'] = uploaded_image.get('url')
+            except Exception as e:
+                return Response({'error': 'Error al subir imagen a Cloudinary'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
 class UsuarioRolSucursalViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRolSucursal.objects.all()
     serializer_class = UsuarioRolSucursalSerializer

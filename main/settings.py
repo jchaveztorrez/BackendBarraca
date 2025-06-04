@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-
+import cloudinary;
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,7 +28,9 @@ SECRET_KEY = 'django-insecure-=i#%_a+pm1twvxlwn0^o+98cgvpt813fdsjb9nqfs=p9x8qp*p
 DEBUG = False
 
 
-ALLOWED_HOSTS = ['*']
+
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'cloudinary',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
@@ -156,3 +160,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+cloudinary.config(
+    cloud_name="dtqv5ejlr",
+    api_key="478626779318996",
+    api_secret="zueLnbD7U8KqrzQztEiNVRVwsnI"
+)
