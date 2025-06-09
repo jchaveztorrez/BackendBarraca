@@ -145,10 +145,16 @@ class DetalleVentaMadera(models.Model):
         if categoria == 'tabla':
             volumen_por_unidad = (self.producto.ancho * self.producto.espesor * self.producto.largo) / Decimal(12)
             self.subtotal = volumen_por_unidad * Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
+            
         elif categoria in ['listón', 'liston', 'ripa',]:
             self.subtotal = Decimal(self.precio_unitario) * Decimal(self.producto.largo) * Decimal(self.cantidad_vendida)
         elif categoria == 'mueble':
             self.subtotal = Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
+            
+        elif categoria == 'tijera':
+             volumen_por_unidad = (self.producto.ancho * self.producto.espesor * self.producto.largo) / Decimal(12)
+             self.subtotal = volumen_por_unidad * Decimal(self.precio_unitario) * Decimal(self.cantidad_vendida)
+
         elif categoria == 'metro lineal':
             largo_en_metros = Decimal(self.producto.largo) * Decimal('0.3048')  # pies a metros
             self.subtotal = Decimal(self.precio_unitario) * largo_en_metros * Decimal(self.cantidad_vendida)    

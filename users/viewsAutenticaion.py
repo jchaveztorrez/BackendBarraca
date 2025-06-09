@@ -15,6 +15,12 @@ from rest_framework.views import APIView
 from rest_framework import generics 
 from django.db.models import Prefetch
 from cloudinary.models import CloudinaryField
+import cloudinary.uploader
+from rest_framework.response import Response
+from rest_framework import viewsets, status
+from .models import Usuario
+from .serializers import UsuarioSerializer
+from django.db.models import Q
 
 # Create your views here.
 class SucursalViewSet(viewsets.ModelViewSet):
@@ -69,11 +75,7 @@ class PermisoViewSet(viewsets.ModelViewSet):
         instance.estado = False
         instance.save()
         return Response({'status': 'permiso deactivated'}, status=status.HTTP_204_NO_CONTENT)
-import cloudinary.uploader
-from rest_framework.response import Response
-from rest_framework import viewsets, status
-from .models import Usuario
-from .serializers import UsuarioSerializer
+
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
@@ -119,6 +121,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data)
 
+#si el usuario no tien asigando un rol en una sucursal, no se le permite crear un usuario rol sucursal
 
 class UsuarioRolSucursalViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRolSucursal.objects.all()
@@ -220,12 +223,27 @@ class CategoriasViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        nombre_normalizado = request.data.get('nombre', '').strip().lower()
+        if Categoria.objects.filter(nombre__iexact=nombre_normalizado).exists():
+            raise ValidationError({'nombre': 'Ya existe una categoría con ese nombre (sin importar mayúsculas/minúsculas).'})
+
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         partial = True
         instance = self.get_object()
+
+        nuevo_nombre = request.data.get('nombre', '').strip().lower()
+
+        # Evitar conflictos con otras categorías (distintas del actual ID)
+        if Categoria.objects.filter(
+            ~Q(id=instance.id),
+            nombre__iexact=nuevo_nombre
+        ).exists():
+            raise ValidationError({'nombre': 'Ya existe una categoría con ese nombre (sin importar mayúsculas/minúsculas).'})
+
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -411,7 +429,7 @@ class FacturaReciboViewSet(viewsets.ModelViewSet):
             return Response({"error": f"Ocurrió un error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
+#si el usuario no tien asigando un rol en una sucursal, no se le permite accesder al sistema 
 class LoginView(APIView):
     authentication_classes = []  # No autenticación requerida para login
     permission_classes = []
