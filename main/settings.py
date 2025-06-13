@@ -21,12 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=i#%_a+pm1twvxlwn0^o+98cgvpt813fdsjb9nqfs=p9x8qp*p'
+# Clave secreta
+SECRET_KEY = os.getenv('SECRET_KEY', 'valor-por-defecto-para-desarrollo')
+# Modo debug
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
+# Hosts permitidos
+ALLOWED_HOSTS = ['*'] if DEBUG else ['themause.onrender.com']
+ALLOWED_HOSTS = ['backenddj-1qj9.onrender.com', 'localhost', '127.0.0.1']
 
 
 DEBUG = True
@@ -86,7 +89,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
+""" DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Barraca',
@@ -95,7 +98,18 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     }
+} """
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'barraca'),
+        'USER': os.getenv('DB_USER', 'barraca_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'TDLFgg9RUeYjQbrhpcuKTsCaqwG68SfL'),
+        'HOST': os.getenv('DB_HOST', 'dpg-d165bcumcj7s73b5llu0-a.oregon-postgres.render.com'),  # ✅ Host externo completo
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
 }
+
 
 
 # Password validation
