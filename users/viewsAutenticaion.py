@@ -142,8 +142,17 @@ class UsuarioRolSucursalViewSet(viewsets.ModelViewSet):
         if not usuario_id or not rol_id or not sucursal_id:
             return Response({'error': 'IDs inválidos'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Validación: ya existe la misma asignación
         if UsuarioRolSucursal.objects.filter(usuario_id=usuario_id, rol_id=rol_id, sucursal_id=sucursal_id).exists():
-            return Response({'error': ['El usuario ya tiene ese rol asignado en esa sucursal']},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': ['El usuario ya tiene ese rol asignado en esa sucursal']}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validación: usuario ya tiene otro rol asignado
+        if UsuarioRolSucursal.objects.filter(usuario_id=usuario_id).exclude(rol_id=rol_id).exists():
+            return Response({'error': ['El usuario ya tiene un rol asignado diferente']}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validación: usuario ya tiene otra sucursal asignada
+        if UsuarioRolSucursal.objects.filter(usuario_id=usuario_id).exclude(sucursal_id=sucursal_id).exists():
+            return Response({'error': ['El usuario ya tiene una sucursal asignada diferente']}, status=status.HTTP_400_BAD_REQUEST)
 
         instancia = UsuarioRolSucursal.objects.create(
             usuario_id=usuario_id,
@@ -152,7 +161,6 @@ class UsuarioRolSucursalViewSet(viewsets.ModelViewSet):
         )
 
         return Response(UsuarioRolSucursalSerializer(instancia).data, status=status.HTTP_201_CREATED)
-
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

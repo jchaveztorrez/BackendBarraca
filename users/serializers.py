@@ -6,6 +6,7 @@ class SucursalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sucursal
         fields = '__all__'
+        
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rol
