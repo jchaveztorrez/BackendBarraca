@@ -28,8 +28,6 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 
 # Hosts permitidos
-ALLOWED_HOSTS = ['*'] if DEBUG else ['themause.onrender.com']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 DEBUG = True
