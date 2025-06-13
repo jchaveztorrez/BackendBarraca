@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import cloudinary;
 import os
+from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -86,16 +88,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-""" DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Barraca',
-        'USER': 'postgres',
-        'PASSWORD': '13247291',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-} """
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -132,38 +125,39 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# Archivos estáticos
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# Archivos multimedia
+MEDIA_URL = '/media/'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUD_NAME', 'dtqv5ejlr'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY', '478626779318996'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', 'zueLnbD7U8KqrzQztEiNVRVwsnI'),
+    'SECURE': True,
 }
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200", 
-    "https://barracatorrez.netlify.app"
-]
-CSRF_TRUSTED_ORIGINS = [
-   "https://barracatorrez.netlify.app",
-]
-CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
-APPEND_SLASH = True  # O False, según tu preferencia
+
+cloudinary.config(
+    cloud_name="dtqv5ejlr",
+    api_key="478626779318996",
+    api_secret="zueLnbD7U8KqrzQztEiNVRVwsnI"
+)
+
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -176,8 +170,39 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-cloudinary.config(
-    cloud_name="dtqv5ejlr",
-    api_key="478626779318996",
-    api_secret="zueLnbD7U8KqrzQztEiNVRVwsnI"
-)
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    "https://barracatorrez.netlify.app"
+]
+CSRF_TRUSTED_ORIGINS = [
+   "https://barracatorrez.netlify.app",
+]
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
+APPEND_SLASH = True  # O False, según tu preferencia
+
+
+
+# Configuraciones de seguridad para producción
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Auto primary key
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
