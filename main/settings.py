@@ -30,8 +30,8 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Hosts permitidos
 ALLOWED_HOSTS = ['*'] if DEBUG else ['barraca.onrender.com']
 ALLOWED_HOSTS = ['backendbarraca.onrender.com', 'localhost', '127.0.0.1']
-
-
+#esto sale del servicey no de la base datos 
+#backendbarraca.onrender.com
 
 # Application definition
 
