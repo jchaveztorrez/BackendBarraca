@@ -28,10 +28,9 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 
 # Hosts permitidos
+ALLOWED_HOSTS = ['*'] if DEBUG else ['barraca.onrender.com']
+ALLOWED_HOSTS = ['backendbarraca.onrender.com', 'localhost', '127.0.0.1']
 
-
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -157,6 +156,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200", 
+    "https://barracatorrez.netlify.app"
+]
+CSRF_TRUSTED_ORIGINS = [
+   "https://barracatorrez.netlify.app",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
