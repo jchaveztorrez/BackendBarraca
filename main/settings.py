@@ -95,7 +95,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', 'barraca'),
         'USER': os.getenv('DB_USER', 'barraca_user'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'TDLFgg9RUeYjQbrhpcuKTsCaqwG68SfL'),
-        'HOST': os.getenv('DB_HOST', 'dpg-d165bcumcj7s73b5llu0-a.oregon-postgres.render.com'),  # ✅ Host externo completo
+        'HOST': os.getenv('DB_HOST', 'dpg-d165bcumcj7s73b5llu0-a.oregon-postgres.render.com'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
