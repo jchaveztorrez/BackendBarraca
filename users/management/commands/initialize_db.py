@@ -87,7 +87,6 @@ class Command(BaseCommand):
             {"nombre": "Ripa", "descripcion": "Categoría para ripas"},
             {"nombre": "Mueble", "descripcion": "Categoría para muebles"},
             {"nombre": "Tijera", "descripcion": "Categoría para tijeras"},
-            {"nombre": "Metro lineal", "descripcion": "Categoría para metro lineal"},
         ]
 
         for categoria in categorias_data:

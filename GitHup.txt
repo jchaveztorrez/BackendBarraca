@@ -22,3 +22,28 @@ git push -u origin main
 
 
 ⚡ ¡Y listo, tu proyecto estará en GitHub! ⚡
+
+
+#!/bin/bash
+
+# ✅ Verificar el remoto actual (opcional, para revisar qué remoto está configurado)
+git remote -v
+
+# ✅ Eliminar el remoto actual si apunta a un repositorio que no es tuyo
+git remote remove origin
+
+# ✅ Agregar el nuevo remoto correcto, que sí te pertenece
+git remote add origin https://github.com/jchaveztorrez/BackendBarraca.git
+
+# ✅ Cambiar el nombre de la rama actual a 'main' (si aún no se llama así)
+git branch -M main
+
+# ✅ Subir el proyecto al nuevo remoto, estableciendo la rama 'main' como upstream
+git push -u origin main
+
+# 💡 Si te pide autenticación:
+# Asegúrate de estar logueado en GitHub con tu cuenta jchaveztorrez.
+# Usa un Token de Acceso Personal (PAT) si te solicita contraseña.
+# Puedes generar uno aquí: https://github.com/settings/tokens
+
+# 🚀 ¡Tu proyecto ahora debería estar subido correctamente al nuevo repositorio!
