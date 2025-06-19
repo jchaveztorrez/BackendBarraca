@@ -454,9 +454,16 @@ class LoginView(APIView):
 
         try:
             # Obtener usuario con roles y permisos
-            usuario = Usuario.objects.prefetch_related(
-                Prefetch('usuariorolsucursal_set', queryset=UsuarioRolSucursal.objects.select_related('rol')),
+            #usuario = Usuario.objects.prefetch_related(
+             #   Prefetch('usuariorolsucursal_set', queryset=UsuarioRolSucursal.objects.select_related('rol')),
+            #).get(correo=correo)
+            usuario = Usuario.objects.select_related().prefetch_related(
+                Prefetch(
+                    'usuariorolsucursal_set',
+                    queryset=UsuarioRolSucursal.objects.select_related('rol', 'sucursal')
+                )
             ).get(correo=correo)
+
 
             # Verificar si el usuario está activo
             if not usuario.estado:
